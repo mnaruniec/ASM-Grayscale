@@ -1,5 +1,5 @@
 all: to_grayscale.o
-	gcc -lnetpbm -Wall -o to_grayscale to_grayscale.o main.c
+	gcc -Wall -o to_grayscale to_grayscale.o main.c
 
 to_grayscale.o:
 	nasm -f elf64 to_grayscale.asm
