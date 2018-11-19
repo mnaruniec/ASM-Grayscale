@@ -1,5 +1,10 @@
-all: to_grayscale.o
-	gcc -Wall -o to_grayscale to_grayscale.o main.c
+cflags= -Wall -g -no-pie
 
-to_grayscale.o:
-	nasm -f elf64 to_grayscale.asm
+to_grayscale: to_grayscale.o main.c
+	gcc ${cflags} -o $@ $^
+
+to_grayscale.o: to_grayscale.asm
+	nasm -f elf64 -F dwarf $^ -o $@
+
+clean:
+	-rm *.o
