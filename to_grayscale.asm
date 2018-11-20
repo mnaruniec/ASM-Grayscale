@@ -17,18 +17,19 @@ set_rgb:
 to_grayscale:
     push rbp
     mov rbp, rsp
-    imul rcx, rdx ; length = width * height
+    imul rdx, rsi ; length = width * height
+    mov rsi, rdi ; source_ptr = dest_ptr
 
-    mov edx, [RED] ; load color weights to free registers
+    mov ecx, [RED] ; load color weights to free registers
     mov r9d, [GREEN]
     mov r11d, [BLUE]
 
-    test rcx, rcx
+    test rdx, rdx
     jmp cond
 loop:
     xor eax, eax
     lodsb
-    imul eax, edx ; calculate red
+    imul eax, ecx ; calculate red
     mov r8d, eax
 
     xor eax, eax
@@ -45,7 +46,7 @@ loop:
 
     stosb
 
-    dec rcx
+    dec rdx
 cond:
     jnz loop ; if rcx != 0
     leave

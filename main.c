@@ -3,10 +3,9 @@
 #include <errno.h>
 
 // Set color weights. Arguments should sum to 256 for best results.
-extern void set_rgb(unsigned char red, unsigned char green, unsigned char blue);
+extern void set_rgb(unsigned red, unsigned green, unsigned blue);
 
-extern void to_grayscale(unsigned char *dest, unsigned char *src,
-                         unsigned width, unsigned height);
+extern void to_grayscale(unsigned char *buffer, unsigned width, unsigned height);
 
 
 int main(int argc, char **argv) {
@@ -15,8 +14,7 @@ int main(int argc, char **argv) {
     unsigned width = 0, height = 0, depth = 0;
     size_t length = 0;
     unsigned tmp = 0;
-    unsigned char *src = NULL;
-    unsigned char *dest = NULL;
+    unsigned char *buffer = NULL;
     int ret = 1;
 
     if(argc < 3) {
@@ -38,8 +36,8 @@ int main(int argc, char **argv) {
 
     length = ((size_t)width) * (size_t)height;
 
-    if(!(src = malloc(3 * length))) {
-        perror("malloc(src)");
+    if(!(buffer = malloc(3 * length))) {
+        perror("malloc(buffer)");
         goto close_input;
     }
 
@@ -47,28 +45,23 @@ int main(int argc, char **argv) {
         tmp = 0;
         if (EOF == fscanf(input, "%u", &tmp) || tmp > 255) {
             printf("pixel read error\n");
-            goto free_src;
+            goto free_buffer;
         }
-        src[i] = (unsigned char)tmp;
+        buffer[i] = (unsigned char)tmp;
     }
 
-    if(!(dest = malloc(length))) {
-        perror("malloc(dest)");
-        goto free_src;
-    }
-
-    to_grayscale(dest, src, width, height);
+    to_grayscale(buffer, width, height);
 
     if(!(output = fopen(argv[2], "w"))) {
         perror("fopen(output)");
-        goto free_dest;
+        goto free_buffer;
     }
 
     fprintf(output, "P2\n%u %u\n255\n", width, height);
 
     for (size_t i = 0; i < height; i++) {
         for (size_t j = 0; j < width; j++) {
-            fprintf(output, "%u ", (unsigned) (dest[i * width + j]));
+            fprintf(output, "%u ", (unsigned) (buffer[i * width + j]));
         }
         if (0 >= fprintf(output, "\n")) {
             printf("fprintf error");
@@ -80,10 +73,8 @@ int main(int argc, char **argv) {
 
     close_output:
         pclose(output);
-    free_dest:
-        free(dest);
-    free_src:
-        free(src);
+    free_buffer:
+        free(buffer);
     close_input:
         pclose(input);
     return ret;
