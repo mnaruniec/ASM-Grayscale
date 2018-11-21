@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 // Set color weights. Arguments should sum to 256 for best results.
 extern void set_rgb(unsigned red, unsigned green, unsigned blue);
@@ -15,14 +16,15 @@ int main(int argc, char **argv) {
     size_t length = 0;
     unsigned tmp = 0;
     unsigned char *buffer = NULL;
+    int pathlen;
     int ret = 1;
 
-    if(argc < 3) {
-        printf("usage: %s input_file output_file\n", argc > 0 ? argv[0] : "to_grayscale");
+    if (argc < 2 || (pathlen = strlen(argv[1])) < 4 || strncmp(argv[1] + pathlen - 4, ".ppm", 4)) {
+        printf("usage: %s input_file.ppm\n", argc > 0 ? argv[0] : "to_grayscale");
         return 1;
     }
 
-    if(!(input = fopen(argv[1], "r"))) {
+    if (!(input = fopen(argv[1], "r"))) {
         perror("fopen(input)");
         return 1;
     }
@@ -36,7 +38,7 @@ int main(int argc, char **argv) {
 
     length = ((size_t)width) * (size_t)height;
 
-    if(!(buffer = malloc(3 * length))) {
+    if (!(buffer = malloc(3 * length))) {
         perror("malloc(buffer)");
         goto close_input;
     }
@@ -52,7 +54,8 @@ int main(int argc, char **argv) {
 
     to_grayscale(buffer, width, height);
 
-    if(!(output = fopen(argv[2], "w"))) {
+    argv[1][pathlen - 2] = 'g';
+    if (!(output = fopen(argv[1], "w"))) {
         perror("fopen(output)");
         goto free_buffer;
     }
